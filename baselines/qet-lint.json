@@ -1,0 +1,545 @@
+{
+  "elements/10_electric/10_allpole/120_cables_wiring/m_cable_10p_demux.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/10_allpole/120_cables_wiring/m_cable_10p_demux_40px.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/10_allpole/120_cables_wiring/m_cable_10p_mux.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/10_allpole/120_cables_wiring/m_cable_10p_mux_40px.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/11_singlepole/500_home_installation/25_V.D.I/network/brassage/switch_12_ports.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/abb/abb_pfea112_ip20.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/abb/abb_pfea112_ip65.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/beckhoff/01_schematic/bus_terminals/bc9191.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/beckhoff/01_schematic/ethercat_terminals/ek1814.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/beckhoff/01_schematic/ethercat_terminals/ek1818.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/beckhoff/01_schematic/ethercat_terminals/ek1828.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/beckhoff/01_schematic/ethercat_terminals/ek1914.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/beckhoff/01_schematic/ethercat_terminals/el1918.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/beckhoff/01_schematic/ethercat_terminals/el9148.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/beckhoff/01_schematic/ethercat_terminals/elm7231-xxxx.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/beckhoff/01_schematic/ethercat_terminals/elm72x1-xxxx.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/beckhoff/01_schematic/ethercat_terminals/elm72x2-xxxx.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/gce/xpoolconnect.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/audioserver/audioserver_komplett_1reihig.elmt": {
+    "E004": 2
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/audioserver/audioserver_komplett_2reihig.elmt": {
+    "E004": 2
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/di_extension/di_extension_komplett_1reihig.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/di_extension/di_extension_komplett_2reihig.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/energy_meter_1ph_tree/energy_meter_1ph_tree_komplett_1reihig.elmt": {
+    "E004": 2
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/energy_meter_1ph_tree/energy_meter_1ph_tree_komplett_2reihig.elmt": {
+    "E004": 2
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/energy_meter_3ph_tree/energy_meter_3ph_tree_komplett_1reihig.elmt": {
+    "E004": 4
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/energy_meter_3ph_tree/energy_meter_3ph_tree_komplett_2reihig.elmt": {
+    "E004": 4
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/extension/extension_komplett_1reihig.elmt": {
+    "E003": 1,
+    "E004": 2
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/extension/extension_komplett_2reihig.elmt": {
+    "E003": 1,
+    "E004": 2
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/froeling_extension/froeling_extension_komplett_1reihig.elmt": {
+    "E004": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/froeling_extension/froeling_extension_komplett_2reihig.elmt": {
+    "E004": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/miniserver_compact/miniserver_compact_komplett_1reihig.elmt": {
+    "E004": 2
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/miniserver_compact/miniserver_compact_komplett_2reihig.elmt": {
+    "E004": 2
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/miniserver_gen_2/miniserver_gen_2_komplett_1reihig.elmt": {
+    "E004": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/miniserver_gen_2/miniserver_gen_2_komplett_2reihig.elmt": {
+    "E004": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/modbus_extension/modbus_extension_komplett_1reihig.elmt": {
+    "E004": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/modbus_extension/modbus_extension_komplett_2reihig.elmt": {
+    "E004": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/multi_extension_air/multi_extension_air_komplett_1reihig.elmt": {
+    "E003": 1,
+    "E004": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/multi_extension_air/multi_extension_air_komplett_2reihig.elmt": {
+    "E003": 1,
+    "E004": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/power_supply_4_2a/power_supply_4_2a_komplett_1reihig.elmt": {
+    "E004": 2
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/power_supply_4_2a/power_supply_4_2a_komplett_2reihig.elmt": {
+    "E004": 2
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/power_supply_backup/power_supply_backup_komplett_1reihig.elmt": {
+    "E003": 1,
+    "E004": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/power_supply_backup/power_supply_backup_komplett_2reihig.elmt": {
+    "E003": 1,
+    "E004": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/rgbw_dimmer_air/rgbw_dimmer_air_komplett_1reihig.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/rgbw_dimmer_air/rgbw_dimmer_air_komplett_2reihig.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/rgbw_dimmer_tree/rgbw_dimmer_tree_komplett_1reihig.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/rgbw_dimmer_tree/rgbw_dimmer_tree_komplett_2reihig.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/rs232_extension/rs232_extension_komplett_1reihig.elmt": {
+    "E004": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/rs232_extension/rs232_extension_komplett_2reihig.elmt": {
+    "E004": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/rs485_extension/rs485_extension_komplett_1reihig.elmt": {
+    "E004": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/rs485_extension/rs485_extension_komplett_2reihig.elmt": {
+    "E004": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/schueco_extension/schueco_extension_komplett_1reihig.elmt": {
+    "E004": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/schueco_extension/schueco_extension_komplett_2reihig.elmt": {
+    "E004": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/stereo_extension/stereo_extension_komplett_1reihig.elmt": {
+    "E004": 2
+  },
+  "elements/10_electric/20_manufacturers_articles/loxone/stereo_extension/stereo_extension_komplett_2reihig.elmt": {
+    "E004": 2
+  },
+  "elements/10_electric/20_manufacturers_articles/lunatone/dali_1ch_dimmer_cv/dali_1ch_dimmer_cv_komplett_1reihig.elmt": {
+    "E004": 2
+  },
+  "elements/10_electric/20_manufacturers_articles/lunatone/dali_1ch_dimmer_cv/dali_1ch_dimmer_cv_komplett_2reihig.elmt": {
+    "E004": 2
+  },
+  "elements/10_electric/20_manufacturers_articles/lunatone/dali_2ch_dimmer_cv/dali_2ch_dimmer_cv_komplett_1reihig.elmt": {
+    "E004": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/lunatone/dali_2ch_dimmer_cv/dali_2ch_dimmer_cv_komplett_2reihig.elmt": {
+    "E004": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/mayr/roba-switch-24v.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/mean_well/hdr_100_24/hdr_100_24_komplett_1reihig.elmt": {
+    "E004": 2
+  },
+  "elements/10_electric/20_manufacturers_articles/mean_well/hdr_100_24/hdr_100_24_komplett_2reihig.elmt": {
+    "E004": 2
+  },
+  "elements/10_electric/20_manufacturers_articles/mean_well/hdr_150_24/hdr_150_24_komplett_1reihig.elmt": {
+    "E004": 2
+  },
+  "elements/10_electric/20_manufacturers_articles/mean_well/hdr_150_24/hdr_150_24_komplett_2reihig.elmt": {
+    "E004": 2
+  },
+  "elements/10_electric/20_manufacturers_articles/mean_well/hdr_60_24/hdr_60_24_komplett_1reihig.elmt": {
+    "E004": 2
+  },
+  "elements/10_electric/20_manufacturers_articles/mean_well/hdr_60_24/hdr_60_24_komplett_2reihig.elmt": {
+    "E004": 2
+  },
+  "elements/10_electric/20_manufacturers_articles/raspberry/raspberry_pi_pico_w.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/vcelink/patchpanel_24_cat6a_oben/patchpanel_24_cat6a_oben.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/vcelink/patchpanel_24_cat6a_unten/patchpanel_24_cat6a_unten.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0287_rail-mounted/wago_0287-0474-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0287_rail-mounted/wago_0287-0475-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0287_rail-mounted/wago_0287-0853-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0287_rail-mounted/wago_0287-0854-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0289_interfacemodules/wago_0289-0101-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0289_interfacemodules/wago_0289-0103-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0289_interfacemodules/wago_0289-0114-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0289_interfacemodules/wago_0289-0131-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/010_pfc/wago_0750-8210-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/010_pfc/wago_0750-8211-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/010_pfc/wago_0750-8215-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/040_digital-in/wago_0750-1405-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/040_digital-in/wago_0750-1405-0000-0000_ii.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/040_digital-in/wago_0750-1406-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/040_digital-in/wago_0750-1406-0000-0000_ii.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/040_digital-in/wago_0750-1407-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/040_digital-in/wago_0750-1407-0000-0000_ii.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/040_digital-in/wago_0750-1415-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/040_digital-in/wago_0750-1415-0000-0000_i.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/040_digital-in/wago_0750-1415-0000-0000_ii.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/040_digital-in/wago_0750-1416-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/040_digital-in/wago_0750-1416-0000-0000_i.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/040_digital-in/wago_0750-1416-0000-0000_ii.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/040_digital-in/wago_0750-1417-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/040_digital-in/wago_0750-1417-0000-0000_i.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/040_digital-in/wago_0750-1417-0000-0000_ii.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/040_digital-in/wago_0750-1418-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/040_digital-in/wago_0750-1418-0000-0000_i.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/040_digital-in/wago_0750-1418-0000-0000_ii.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/040_digital-in/wago_0750-1420-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/040_digital-in/wago_0750-1421-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/040_digital-in/wago_0750-1422-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/040_digital-in/wago_0750-1423-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/040_digital-in/wago_0750-1425-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/050_digital-out/wago_0750-1504-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/050_digital-out/wago_0750-1504-0000-0000_ii.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/050_digital-out/wago_0750-1505-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/050_digital-out/wago_0750-1505-0000-0000_ii.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/050_digital-out/wago_0750-1506-0000-0000_do.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/050_digital-out/wago_0750-1515-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/050_digital-out/wago_0750-1515-0000-0000_i.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/050_digital-out/wago_0750-1515-0000-0000_ii.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/050_digital-out/wago_0750-1516-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/050_digital-out/wago_0750-1516-0000-0000_i.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/050_digital-out/wago_0750-1516-0000-0000_ii.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/060_analog-in/wago_0750-0496-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/060_analog-in/wago_0750-0497-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/060_analog-in/wago_0750-0497-0000-0000_i.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/060_analog-in/wago_0750-0497-0000-0000_ii.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/060_analog-in/wago_0750-0498-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/070_analog-out/wago_0750-0564-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/070_analog-out/wago_0750-0597-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/080_function_technology/wago_0750-0632-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/080_function_technology/wago_0750-0632-0000-0100.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/090_communication/wago_0750-0657-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/090_communication/wago_0750-1657-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/100_functional_safety/wago_0750-0662-0000-0003.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/100_functional_safety/wago_0750-0665-0000-0001_do.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/100_functional_safety/wago_0750-0666-0000-0003_do.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/100_functional_safety/wago_0750-0667-0000-0003_fdo.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/100_functional_safety/wago_0750-0668-0000-0004_i.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/100_functional_safety/wago_0750-0668-0000-0004_ii.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/120_system/wago_0750-1605-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/120_system/wago_0750-1606-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/120_system/wago_0750-1607-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/120_system/wago_0750-1607-0000-0000_i.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750/120_system/wago_0750-1607-0000-0000_ii.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750_xtr/010_pfc/wago_0750-8210-0040-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750_xtr/010_pfc/wago_0750-8211-0040-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750_xtr/010_pfc/wago_0750-8211-0040-0001.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750_xtr/040_digital-in/wago_0750-1405-0040-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750_xtr/040_digital-in/wago_0750-1405-0040-0000_ii.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750_xtr/040_digital-in/wago_0750-1415-0040-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750_xtr/040_digital-in/wago_0750-1415-0040-0000_i.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750_xtr/040_digital-in/wago_0750-1415-0040-0000_ii.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750_xtr/040_digital-in/wago_0750-1416-0040-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750_xtr/040_digital-in/wago_0750-1416-0040-0000_i.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750_xtr/040_digital-in/wago_0750-1416-0040-0000_ii.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750_xtr/050_digital-out/wago_0750-1515-0040-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750_xtr/050_digital-out/wago_0750-1515-0040-0000_i.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750_xtr/050_digital-out/wago_0750-1515-0040-0000_ii.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750_xtr/120_system/wago_0750-1605-0040-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0750_io_750_xtr/120_system/wago_0750-1606-0040-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0752_edge/wago_0752-8303-8000-0002.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0752_edge/wago_0752-9800-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0753_io_753/100_functional_safety/wago_0753-0662-0000-0002.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0753_io_753/100_functional_safety/wago_0753-0662-0000-0003.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0753_io_753/100_functional_safety/wago_0753-0666-0000-0003_do.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0753_io_753/100_functional_safety/wago_0753-0667-0000-0002_fdo.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0753_io_753/100_functional_safety/wago_0753-0667-0000-0003_fdo.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0753_io_753/100_functional_safety/wago_0753-0668-0000-0004_i.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0753_io_753/100_functional_safety/wago_0753-0668-0000-0004_ii.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0787_power-supplies/wago_0787-0974-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0787_power-supplies/wago_0787-0976-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0852_network/wago_0852-0103-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0852_network/wago_0852-1106-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0852_network/wago_0852-1813-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/wago/01_schematic/0852_network/wago_0852-1816-0000-0000.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/west/west_8010.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/zyxel/xgs1935_52/xgs1935_52.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/20_manufacturers_articles/zyxel/xgs1935_52hp/xgs1935_52hp.elmt": {
+    "E003": 1
+  },
+  "elements/10_electric/98_graphics/99_assembly_plan/01_thumbnails_mounting_plate/shelly/90_shelly_v1/shelly25.elmt": {
+    "E004": 1
+  },
+  "elements/10_electric/98_graphics/99_assembly_plan/01_thumbnails_mounting_plate/shelly/90_shelly_v1/shelly_dimmer2.elmt": {
+    "E004": 1
+  },
+  "elements/10_electric/98_graphics/99_assembly_plan/01_thumbnails_mounting_plate/shelly/91_shelly_plus/shelly_plus_1pm.elmt": {
+    "E004": 1
+  },
+  "elements/10_electric/98_graphics/99_assembly_plan/01_thumbnails_mounting_plate/shelly/91_shelly_plus/shelly_plus_2pm.elmt": {
+    "E004": 1
+  },
+  "elements/10_electric/98_graphics/99_assembly_plan/01_thumbnails_mounting_plate/shelly/92_shelly_pro/shelly_pro_1pm.elmt": {
+    "E004": 1
+  },
+  "elements/10_electric/98_graphics/99_assembly_plan/01_thumbnails_mounting_plate/shelly/92_shelly_pro/shelly_pro_2pm.elmt": {
+    "E004": 1
+  },
+  "elements/10_electric/98_graphics/99_assembly_plan/01_thumbnails_mounting_plate/shelly/92_shelly_pro/shelly_pro_4pm.elmt": {
+    "E004": 2
+  },
+  "elements/10_electric/99_miscellaneous_unsorted/cpj.elmt": {
+    "E003": 1
+  },
+  "examples/Habitat-Unifilaire.qet": {
+    "P005": 1
+  },
+  "examples/perceuse.qet": {
+    "P005": 1
+  }
+}

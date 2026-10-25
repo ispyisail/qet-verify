@@ -1,0 +1,98 @@
+{
+  "2612_ats_singlephase.qet": {
+    "i1": true,
+    "i3": true
+  },
+  "741.qet": {
+    "i1": true,
+    "i3": true
+  },
+  "ArduinoLCD.qet": {
+    "i1": true,
+    "i3": true
+  },
+  "Habitat-Schemas_developpes.qet": {
+    "i1": true,
+    "i3": true
+  },
+  "Habitat-Unifilaire.qet": {
+    "i1": true,
+    "i3": true
+  },
+  "Projet_vierge.qet": {
+    "i1": true,
+    "i3": true
+  },
+  "ShellyParts.qet": {
+    "i1": true,
+    "i3": true
+  },
+  "affuteuse_250h.qet": {
+    "i1": true,
+    "i3": true
+  },
+  "cablage-eclairages_sikli-v5.qet": {
+    "i1": true,
+    "i3": true
+  },
+  "convertisseur.qet": {
+    "i1": true,
+    "i3": true
+  },
+  "c\u00e2blage-\u00e9clairages-sikli-v5.qet": {
+    "i1": true,
+    "i3": true
+  },
+  "grafcet.qet": {
+    "i1": true,
+    "i3": true
+  },
+  "industrial.qet": {
+    "i1": true,
+    "i3": true
+  },
+  "iso_sfc_example.qet": {
+    "i1": true,
+    "i3": true
+  },
+  "lmdg.qet": {
+    "i1": true,
+    "i3": true
+  },
+  "m_000.qet": {
+    "i1": true,
+    "i3": true
+  },
+  "perceuse.qet": {
+    "i1": true,
+    "i3": true
+  },
+  "photovoltaique.qet": {
+    "i1": true,
+    "i3": true
+  },
+  "pinball_williams_em.qet": {
+    "i1": true,
+    "i3": true
+  },
+  "schema_indus.qet": {
+    "i1": true,
+    "i3": true
+  },
+  "schema_unifilaire_voltaique2.qet": {
+    "i1": true,
+    "i3": true
+  },
+  "tableau_domestique.qet": {
+    "i1": true,
+    "i3": true
+  },
+  "tremie_vibrante.qet": {
+    "i1": true,
+    "i3": true
+  },
+  "weneedpolonez-Polonez_MR89_wiring_diagram.qet": {
+    "i1": true,
+    "i3": true
+  }
+}
