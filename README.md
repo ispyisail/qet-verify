@@ -21,6 +21,26 @@ for any failure. A `SKIP` is not a pass: it means the check did not run.
 
 Takes about 5 seconds without `--binary`, about a minute with it.
 
+## The receipt
+
+At the end `verify.sh` prints a short block to paste into the pull request description:
+
+```
+qet-verify receipt
+change:    9edfbf234 on master (tree clean)
+checks:    project files PASS | english text PASS | save check PASS
+baseline:  upstream master 9edfbf234
+verifier:  qet-verify 16c832f
+```
+
+`change` is the commit the checks ran on. If it is not the last commit of the
+pull request, or says `UNCOMMITTED CHANGES`, the checks are out of date: run
+again. A `SKIP` means that check did not run.
+
+A pasted receipt shows the checks were run; it does not prove it, because
+anyone can type one. To be sure, run `verify.sh` yourself (about a minute).
+Proof needs a check that runs on GitHub's servers.
+
 ## What it does not check
 
 It does not decide whether a feature should exist or whether the design is

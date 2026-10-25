@@ -34,11 +34,11 @@ while [[ $# -gt 0 ]]; do
 done
 [[ -d "$QET_DIR/sources" ]] || { echo "verify.sh: --qet-dir must be a QElectroTech checkout (no sources/ folder in '$QET_DIR')" >&2; exit 2; }
 
-FAILED=0 SKIPPED=0
+FAILED=0 SKIPPED=0 LAST=SKIP R1=SKIP R2=SKIP R3=SKIP
 say()  { printf '\n== %s\n' "$1"; }
-pass() { printf 'PASS  %s\n' "$1"; }
-fail() { printf 'FAIL  %s\n' "$1"; FAILED=$((FAILED+1)); }
-skip() { printf 'SKIP  %s\n' "$1"; SKIPPED=$((SKIPPED+1)); }
+pass() { LAST=PASS; printf 'PASS  %s\n' "$1"; }
+fail() { LAST=FAIL; printf 'FAIL  %s\n' "$1"; FAILED=$((FAILED+1)); }
+skip() { LAST=SKIP; printf 'SKIP  %s\n' "$1"; SKIPPED=$((SKIPPED+1)); }
 
 LINT_BASE="$HERE/baselines/qet-lint.json"
 SRC_BASE="$HERE/baselines/srclint.json"
@@ -57,6 +57,8 @@ else
   fail "new problem found. Details: ${TMPDIR:-/tmp}/qet-verify-lint.txt"
 fi
 
+R1=$LAST
+
 # 2. interface text
 say "2/3 Interface text is English"
 if (( MAKE_BASELINES )); then
@@ -68,6 +70,8 @@ elif python3 "$HERE/tools/srclint/srclint.py" --qet-dir "$QET_DIR" --baseline "$
 else
   fail "new non-English interface text. Details: ${TMPDIR:-/tmp}/qet-verify-src.txt"
 fi
+
+R2=$LAST
 
 # 3. saving loses nothing
 say "3/3 Saving a project loses nothing"
@@ -85,11 +89,38 @@ else
   fail "a save lost or changed data. Details: ${TMPDIR:-/tmp}/qet-verify-det.txt"
 fi
 
+R3=$LAST
+
 say "Result"
 if (( MAKE_BASELINES )); then
+  (( FAILED == 0 )) && git -C "$QET_DIR" rev-parse --git-dir >/dev/null 2>&1 && printf "upstream master %s\n" "$(git -C "$QET_DIR" rev-parse --short=9 HEAD)" > "$HERE/baselines/BASELINE_REF"
   (( FAILED == 0 )) && echo "Baselines written to $HERE/baselines" || echo "Some baselines failed."
   exit $(( FAILED > 0 ))
 fi
 printf '%d failed, %d skipped\n' "$FAILED" "$SKIPPED"
+
+# Receipt: paste this block into the pull request description. It names the
+# commit the checks ran on, so a stale receipt (edited since) is easy to spot.
+# A pasted receipt shows the checks were run; it does not prove it. To be sure,
+# run verify.sh again.
+if git -C "$QET_DIR" rev-parse --git-dir >/dev/null 2>&1; then
+  CHANGE="$(git -C "$QET_DIR" rev-parse --short=9 HEAD)"
+  BRANCH="$(git -C "$QET_DIR" branch --show-current)"
+  if [[ -z "$(git -C "$QET_DIR" status --porcelain --untracked-files=no)" ]]; then TREE="tree clean"; else TREE="UNCOMMITTED CHANGES, commit first"; fi
+else
+  CHANGE="unknown (not a git checkout)"; BRANCH=""; TREE=""
+fi
+VER="$(git -C "$HERE" rev-parse --short=7 HEAD 2>/dev/null || echo unknown)"
+git -C "$HERE" diff --quiet HEAD 2>/dev/null || VER="$VER+modified"
+BASE="$(cat "$HERE/baselines/BASELINE_REF" 2>/dev/null || echo unknown)"
+echo
+echo "Receipt (paste into the pull request description):"
+echo '```'
+echo "qet-verify receipt"
+echo "change:    $CHANGE${BRANCH:+ on $BRANCH}${TREE:+ ($TREE)}"
+echo "checks:    project files $R1 | english text $R2 | save check $R3"
+echo "baseline:  $BASE"
+echo "verifier:  qet-verify $VER"
+echo '```'
 (( FAILED == 0 )) && echo "OK to open your pull request." || echo "Fix the FAIL lines above (or ask your assistant to) and run again."
 exit $(( FAILED > 0 ))
