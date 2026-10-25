@@ -42,4 +42,6 @@ and terminal. Use a Qt 6 build for `--binary`.
 
 ## Licence
 
-Tools are GPL-2.0-or-later (see the SPDX line in each file).
+GPL-2.0-or-later, the same as QElectroTech: version 2 of the GNU General
+Public License, or (at your option) any later version. Full text in `LICENSE`;
+each source file carries an SPDX line.
