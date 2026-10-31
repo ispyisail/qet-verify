@@ -11,8 +11,9 @@
 #   2. interface text is English  (tools/srclint, needs no build)
 #   3. saving a project twice loses nothing (tools/determinism, needs --binary)
 #
-# Each check is compared with a baseline recorded on a clean upstream master,
-# so it fails only on a problem YOUR change adds.
+# Checks 1 and 2 compare with the commit your branch started from on upstream
+# master, fetched each run; check 3 with a baseline stored in baselines/.
+# So each check fails only on a problem YOUR change adds.
 #
 # Maintainers: ./verify.sh --qet-dir <clean master checkout> --binary <its build> --make-baselines
 
@@ -21,7 +22,7 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export PYTHONPATH="$HERE${PYTHONPATH:+:$PYTHONPATH}"
 QET_DIR="" BINARY="" MAKE_BASELINES=0
 
-usage() { sed -n '3,15p' "$0" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '3,18p' "$0" | sed 's/^# \{0,1\}//'; }
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --qet-dir) QET_DIR="${2:-}"; shift ;;
@@ -43,10 +44,52 @@ skip() { LAST=SKIP; printf 'SKIP  %s\n' "$1"; SKIPPED=$((SKIPPED+1)); }
 LINT_BASE="$HERE/baselines/qet-lint.json"
 SRC_BASE="$HERE/baselines/srclint.json"
 DET_BASE="$HERE/baselines/determinism.json"
+BASE_DESC="$(cat "$HERE/baselines/BASELINE_REF" 2>/dev/null || echo unknown)"
+
+# Checks 1 and 2 need no build, so their baseline is made fresh on each run:
+# the same checks on the commit where your branch left upstream master. A
+# stored baseline goes stale the day master changes, and then every pull
+# request shows master's own findings as FAILs. Without a network the stored
+# baselines are used instead, and the receipt says so.
+LINT_PATHS=("$QET_DIR/examples" "$QET_DIR/elements")
+UPSTREAM_URL="https://github.com/qelectrotech/qelectrotech-source-mirror.git"
+WORK="$(mktemp -d "${TMPDIR:-/tmp}/qet-verify.XXXXXX")"
+trap 'rm -rf "$WORK"' EXIT
+live_baselines() {
+  local up base pin_base pin_head
+  git -C "$QET_DIR" rev-parse --git-dir >/dev/null 2>&1 || return 1
+  timeout 120 git -C "$QET_DIR" fetch --quiet --no-tags "$UPSTREAM_URL" \
+    "+refs/heads/master:refs/qet-verify/upstream-master" 2>/dev/null || return 1
+  up="$(git -C "$QET_DIR" rev-parse --short=9 refs/qet-verify/upstream-master)" || return 1
+  base="$(git -C "$QET_DIR" merge-base HEAD refs/qet-verify/upstream-master)" || return 1
+  mkdir -p "$WORK/base/elements"
+  git -C "$QET_DIR" archive "$base" sources examples | tar -x -C "$WORK/base" || return 1
+  # elements/ is a submodule: a branch changes the symbols only by moving its
+  # pin. Same pin, same symbols, so leave them out on both sides (half the
+  # run time). A moved pin is linted against the old pin's symbols, which the
+  # elements checkout must have.
+  pin_base="$(git -C "$QET_DIR" rev-parse "$base:elements" 2>/dev/null)"
+  pin_head="$(git -C "$QET_DIR" rev-parse "HEAD:elements" 2>/dev/null)"
+  local base_paths=("$WORK/base/examples")
+  if [[ "$pin_base" == "$pin_head" ]]; then
+    LINT_PATHS=("$QET_DIR/examples")
+  else
+    git -C "$QET_DIR/elements" archive "$pin_base" 2>/dev/null | tar -x -C "$WORK/base/elements" || return 1
+    base_paths+=("$WORK/base/elements")
+  fi
+  python3 "$HERE/tools/qet-lint" --baseline "$WORK/qet-lint.json" --write-baseline \
+    "${base_paths[@]}" >/dev/null 2>&1 || return 1
+  python3 "$HERE/tools/srclint/srclint.py" --qet-dir "$WORK/base" \
+    --baseline "$WORK/srclint.json" --write-baseline >/dev/null 2>&1 || return 1
+  LINT_BASE="$WORK/qet-lint.json" SRC_BASE="$WORK/srclint.json"
+  BASE_DESC="upstream master $up, branch point $(git -C "$QET_DIR" rev-parse --short=9 "$base") (save check: $BASE_DESC)"
+}
+if (( ! MAKE_BASELINES )) && ! live_baselines; then
+  BASE_DESC="$BASE_DESC (stored; upstream master unreachable, may report master's own findings)"
+fi
 
 # 1. project and symbol files
 say "1/3 Project and symbol files"
-LINT_PATHS=("$QET_DIR/examples" "$QET_DIR/elements")
 if (( MAKE_BASELINES )); then
   python3 "$HERE/tools/qet-lint" --baseline "$LINT_BASE" --write-baseline "${LINT_PATHS[@]}" >/dev/null && pass "baseline written" || fail "could not write baseline"
 elif [[ ! -f "$LINT_BASE" ]]; then
@@ -112,14 +155,13 @@ else
 fi
 VER="$(git -C "$HERE" rev-parse --short=7 HEAD 2>/dev/null || echo unknown)"
 git -C "$HERE" diff --quiet HEAD 2>/dev/null || VER="$VER+modified"
-BASE="$(cat "$HERE/baselines/BASELINE_REF" 2>/dev/null || echo unknown)"
 echo
 echo "Receipt (paste into the pull request description):"
 echo '```'
 echo "qet-verify receipt"
 echo "change:    $CHANGE${BRANCH:+ on $BRANCH}${TREE:+ ($TREE)}"
 echo "checks:    project files $R1 | english text $R2 | save check $R3"
-echo "baseline:  $BASE"
+echo "baseline:  $BASE_DESC"
 echo "verifier:  qet-verify $VER"
 echo '```'
 (( FAILED == 0 )) && echo "OK to open your pull request." || echo "Fix the FAIL lines above (or ask your assistant to) and run again."

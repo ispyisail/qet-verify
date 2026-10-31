@@ -19,7 +19,12 @@ for any failure. A `SKIP` is not a pass: it means the check did not run.
 | 2 | `tools/srclint` | no | A new interface string in `tr()` is not English |
 | 3 | `tools/determinism` | yes | Saving and reloading a project lost or invented an element, wire or terminal |
 
-Takes about 5 seconds without `--binary`, about a minute with it.
+Takes about 15 seconds without `--binary`, about a minute with it. Checks 1
+and 2 fetch upstream `master` into your checkout (a private ref,
+`refs/qet-verify/upstream-master`; your branches are not touched) and compare
+your commit with the commit your branch started from, so a problem already on
+`master` never fails your pull request. Without a network they fall back to the
+stored baselines, and the receipt says so.
 
 ## The receipt
 
@@ -29,7 +34,7 @@ At the end `verify.sh` prints a short block to paste into the pull request descr
 qet-verify receipt
 change:    9edfbf234 on master (tree clean)
 checks:    project files PASS | english text PASS | save check PASS
-baseline:  upstream master 9edfbf234
+baseline:  upstream master 4a91ca8a1, branch point 9edfbf234 (save check: upstream master 9edfbf234)
 verifier:  qet-verify 16c832f
 ```
 
@@ -49,14 +54,16 @@ right. A maintainer still decides that. It also does not run QET's unit tests
 
 ## For maintainers: refreshing the baselines
 
-`baselines/` hold what a clean upstream `master` produces. Regenerate after
-upstream accepts a new finding on purpose:
+Checks 1 and 2 make their baseline on every run, so `baselines/qet-lint.json`
+and `baselines/srclint.json` are only the offline fallback. The save check
+(3) needs a build of `master` and still uses `baselines/determinism.json`.
+Refresh after upstream accepts a new finding on purpose:
 
 ```bash
 ./verify.sh --qet-dir <clean master checkout> --binary <its build> --make-baselines
 ```
 
-Current baselines: upstream `master` at `9edfbf234` (2026-10-25), built with Qt 6.
+Stored baselines: upstream `master` at `9edfbf234` (2026-10-25), built with Qt 6.
 All 24 example projects save identically twice and keep every element, wire
 and terminal. Use a Qt 6 build for `--binary`.
 

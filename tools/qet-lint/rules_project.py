@@ -20,6 +20,9 @@ P004 -- %{key} inside a <dynamic_elmt_text> where key is not a registered
 P005 -- an electrical potential (potentials.py's connected-component
         grouping of conductors sharing a terminal, transitively) whose
         members disagree on wire number or wire colour.
+P006 -- the file is not well-formed XML (E001 for projects). Every other
+        P rule needs the parsed tree and skips such a file, so without this
+        a project broken this way reported nothing.
 """
 from __future__ import annotations
 
@@ -36,6 +39,8 @@ from report import Violation
 # %{key} -- the element-info substitution syntax. Matches
 # QETInformation::elementInfoToVar's own parsing: a bare identifier, letters/
 # digits/underscore/hyphen (the only characters any registered key uses).
+_POS_RE = re.compile(r"line (\d+)")
+
 _INFO_KEY_RE = re.compile(r"%\{([A-Za-z0-9_-]+)\}")
 
 # <dynamic_elmt_text ...>...</dynamic_elmt_text> and <titleblocktemplate
@@ -215,3 +220,15 @@ def p005_potential_disagrees(doc: Document):
                 evidence=f"attr={attr} values={sorted(values)!r} "
                 f"conductor_count={len(potential.conductors)}",
             )
+
+
+def p006_not_parseable(doc: Document):
+    """The project is not well-formed XML, so QET cannot open it."""
+    if doc.parse_error is None:
+        return
+    m = _POS_RE.search(doc.parse_error)
+    yield Violation(
+        "P006", "error", doc.display_path, int(m.group(1)) if m else 0,
+        f"file does not parse as XML: {doc.parse_error}",
+        evidence=doc.parse_error,
+    )

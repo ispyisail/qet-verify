@@ -22,6 +22,7 @@ against the baseline (or any finding when there is no baseline) exits 1.
 | P003 | duplicate `uuid` value within one project | error |
 | P004 | `%{key}` inside `<dynamic_elmt_text>` not in the registered-key allowlist | error |
 | P005 | an electrical potential's members disagree on wire number or colour | warning |
+| P006 | `.qet` does not parse as XML (ElementTree) | error |
 | E001 | `.elmt` does not parse as XML (ElementTree) | error |
 | E002 | illegal XML 1.0 control character in an `.elmt` | error |
 | E003 | terminal names sort differently lexicographically than numerically | warning |

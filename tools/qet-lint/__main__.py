@@ -41,6 +41,7 @@ PROJECT_RULES = (
     rules_project.p003_duplicate_element_uuid,
     rules_project.p004_unregistered_info_key,
     rules_project.p005_potential_disagrees,
+    rules_project.p006_not_parseable,
 )
 ELEMENT_RULES = (
     rules_element.e001_not_parseable,
