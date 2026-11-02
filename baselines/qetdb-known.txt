@@ -2,3 +2,4 @@
 # The check fails only on a project not listed here. Remove a line when it is fixed.
 every_feature                  # autonumber ids are regenerated when read from a .qetdb
 legacy_sequential_attributes   # old sequential attributes are written in their new form
+bridge_tracks                  # autonumber ids are regenerated when read from a .qetdb (the bridges themselves round-trip)
