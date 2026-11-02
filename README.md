@@ -18,6 +18,8 @@ for any failure. A `SKIP` is not a pass: it means the check did not run.
 | 1 | `tools/qet-lint` | no | Your change added a broken wire, a bad coordinate (NaN) or another file problem in the example projects or symbols |
 | 2 | `tools/srclint` | no | A new interface string in `tr()` is not English |
 | 3 | `tools/determinism` | yes | Saving and reloading a project lost or invented an element, wire or terminal |
+| 4 | `tools/qetdb` round trip | yes | A project saved as `.qetdb` and read back is not the same as saved as `.qet`: data the `.qet` keeps is missing from the database. Covers the examples, `tests/qttest/fixtures` and a project with bridges |
+| 5 | `tools/qetdb` scan | no | The change adds saved data to an XML writer but does not touch `sources/dataBase`, add a fixture, or say `qetdb: not needed (reason)` in a commit message |
 
 Takes about 15 seconds without `--binary`, about a minute with it. Checks 1
 and 2 fetch upstream `master` into your checkout (a private ref,
@@ -25,6 +27,13 @@ and 2 fetch upstream `master` into your checkout (a private ref,
 your commit with the commit your branch started from, so a problem already on
 `master` never fails your pull request. Without a network they fall back to the
 stored baselines, and the receipt says so.
+
+## Updates
+
+`verify.sh` fetches its own repository before every run and fast-forwards to the latest
+version, then runs that version. Set `QET_VERIFY_NO_UPDATE=1` to skip it. The receipt's
+`verifier:` line says `up to date`, `updated just now`, or why it could not check. A copy
+downloaded as a zip has no git history and cannot update itself.
 
 ## The receipt
 
