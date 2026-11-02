@@ -10,6 +10,11 @@
 #   1. project and symbol files   (tools/qet-lint, needs no build)
 #   2. interface text is English  (tools/srclint, needs no build)
 #   3. saving a project twice loses nothing (tools/determinism, needs --binary)
+#   4. data saved in a .qet is kept by a .qetdb too (tools/qetdb, needs --binary)
+#   5. a change adding saved data also changes the database code (tools/qetdb)
+#
+# Before it runs, verify.sh updates itself from its own repository (set
+# QET_VERIFY_NO_UPDATE=1 to skip), so everyone runs the latest checks.
 #
 # Checks 1 and 2 compare with the commit your branch started from on upstream
 # master, fetched each run; check 3 with a baseline stored in baselines/.
@@ -20,9 +25,33 @@
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export PYTHONPATH="$HERE${PYTHONPATH:+:$PYTHONPATH}"
+
+# Update this checker first: a pull request is judged by the checks of the day,
+# not the ones that were cloned. Fast-forward only, so local edits are never
+# overwritten; then run again as the new version. The receipt says which.
+UPDATE_STATE="update not checked"
+if [[ -z "${QET_VERIFY_NO_UPDATE:-}" ]] && git -C "$HERE" rev-parse --git-dir >/dev/null 2>&1; then
+  if [[ -n "${QET_VERIFY_UPDATED:-}" ]]; then
+    UPDATE_STATE="updated just now"
+  elif timeout 20 git -C "$HERE" fetch --quiet origin 2>/dev/null; then
+    UPSTREAM_REF="$(git -C "$HERE" rev-parse --verify --quiet '@{u}' || git -C "$HERE" rev-parse --verify --quiet origin/HEAD || true)"
+    BEHIND="$(git -C "$HERE" rev-list --count HEAD.."${UPSTREAM_REF:-HEAD}" 2>/dev/null || echo 0)"
+    if [[ "$BEHIND" == 0 ]]; then
+      UPDATE_STATE="up to date"
+    elif git -C "$HERE" merge --ff-only --quiet "$UPSTREAM_REF" 2>/dev/null; then
+      echo "qet-verify updated by $BEHIND commit(s); running the new version"
+      QET_VERIFY_UPDATED=1 exec "$0" "$@"
+    else
+      UPDATE_STATE="$BEHIND behind, could not update (local changes?)"
+      echo "WARNING: qet-verify is $BEHIND commit(s) behind and could not update itself; run: git -C $HERE pull" >&2
+    fi
+  else
+    UPDATE_STATE="update not checked (offline)"
+  fi
+fi
 QET_DIR="" BINARY="" MAKE_BASELINES=0
 
-usage() { sed -n '3,18p' "$0" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '3,24p' "$0" | sed 's/^# \{0,1\}//'; }
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --qet-dir) QET_DIR="${2:-}"; shift ;;
@@ -35,7 +64,7 @@ while [[ $# -gt 0 ]]; do
 done
 [[ -d "$QET_DIR/sources" ]] || { echo "verify.sh: --qet-dir must be a QElectroTech checkout (no sources/ folder in '$QET_DIR')" >&2; exit 2; }
 
-FAILED=0 SKIPPED=0 LAST=SKIP R1=SKIP R2=SKIP R3=SKIP
+FAILED=0 SKIPPED=0 LAST=SKIP R1=SKIP R2=SKIP R3=SKIP R4=SKIP R5=SKIP BRANCH_POINT=""
 say()  { printf '\n== %s\n' "$1"; }
 pass() { LAST=PASS; printf 'PASS  %s\n' "$1"; }
 fail() { LAST=FAIL; printf 'FAIL  %s\n' "$1"; FAILED=$((FAILED+1)); }
@@ -82,6 +111,7 @@ live_baselines() {
   python3 "$HERE/tools/srclint/srclint.py" --qet-dir "$WORK/base" \
     --baseline "$WORK/srclint.json" --write-baseline >/dev/null 2>&1 || return 1
   LINT_BASE="$WORK/qet-lint.json" SRC_BASE="$WORK/srclint.json"
+  BRANCH_POINT="$base"
   BASE_DESC="upstream master $up, branch point $(git -C "$QET_DIR" rev-parse --short=9 "$base") (save check: $BASE_DESC)"
 }
 if (( ! MAKE_BASELINES )) && ! live_baselines; then
@@ -89,7 +119,7 @@ if (( ! MAKE_BASELINES )) && ! live_baselines; then
 fi
 
 # 1. project and symbol files
-say "1/3 Project and symbol files"
+say "1/5 Project and symbol files"
 if (( MAKE_BASELINES )); then
   python3 "$HERE/tools/qet-lint" --baseline "$LINT_BASE" --write-baseline "${LINT_PATHS[@]}" >/dev/null && pass "baseline written" || fail "could not write baseline"
 elif [[ ! -f "$LINT_BASE" ]]; then
@@ -103,7 +133,7 @@ fi
 R1=$LAST
 
 # 2. interface text
-say "2/3 Interface text is English"
+say "2/5 Interface text is English"
 if (( MAKE_BASELINES )); then
   python3 "$HERE/tools/srclint/srclint.py" --qet-dir "$QET_DIR" --baseline "$SRC_BASE" --write-baseline >/dev/null && pass "baseline written" || fail "could not write baseline"
 elif [[ ! -f "$SRC_BASE" ]]; then
@@ -117,7 +147,7 @@ fi
 R2=$LAST
 
 # 3. saving loses nothing
-say "3/3 Saving a project loses nothing"
+say "3/5 Saving a project loses nothing"
 if [[ -z "$BINARY" ]]; then
   skip "pass --binary <path to your built qelectrotech> to run this check"
 elif [[ ! -x "$BINARY" ]]; then
@@ -133,6 +163,36 @@ else
 fi
 
 R3=$LAST
+
+# 4. what a .qet keeps, a .qetdb keeps
+say "4/5 A .qetdb keeps what a .qet keeps"
+if [[ -z "$BINARY" ]]; then
+  skip "pass --binary <path to your built qelectrotech> to run this check"
+elif [[ ! -x "$BINARY" ]]; then
+  fail "binary not found or not executable: $BINARY"
+elif (( MAKE_BASELINES )); then
+  skip "nothing to write: the known differences are listed in baselines/qetdb-known.txt"
+elif QT_QPA_PLATFORM=offscreen timeout 1500 python3 "$HERE/tools/qetdb/check.py" roundtrip --binary "$BINARY" --qet-dir "$QET_DIR" --known "$HERE/baselines/qetdb-known.txt" >"${TMPDIR:-/tmp}/qet-verify-qetdb.txt" 2>&1; then
+  pass "every example and fixture project is the same through a .qetdb"
+else
+  fail "a .qetdb lost data a .qet keeps. Details: ${TMPDIR:-/tmp}/qet-verify-qetdb.txt"
+fi
+
+R4=$LAST
+
+# 5. new saved data reaches the database code
+say "5/5 New saved data is also stored in the .qetdb"
+if (( MAKE_BASELINES )); then
+  skip "nothing to write"
+elif [[ -z "$BRANCH_POINT" ]]; then
+  skip "needs the branch point on upstream master (no network, or not a git checkout)"
+elif python3 "$HERE/tools/qetdb/check.py" static --qet-dir "$QET_DIR" --base "$BRANCH_POINT" >"${TMPDIR:-/tmp}/qet-verify-qetdb-static.txt" 2>&1; then
+  pass "$(head -1 "${TMPDIR:-/tmp}/qet-verify-qetdb-static.txt")"
+else
+  fail "new data written to a .qet but not stored in the .qetdb. Details: ${TMPDIR:-/tmp}/qet-verify-qetdb-static.txt"
+fi
+
+R5=$LAST
 
 say "Result"
 if (( MAKE_BASELINES )); then
@@ -160,9 +220,9 @@ echo "Receipt (paste into the pull request description):"
 echo '```'
 echo "qet-verify receipt"
 echo "change:    $CHANGE${BRANCH:+ on $BRANCH}${TREE:+ ($TREE)}"
-echo "checks:    project files $R1 | english text $R2 | save check $R3"
+echo "checks:    project files $R1 | english text $R2 | save check $R3 | qetdb round trip $R4 | qetdb new data $R5"
 echo "baseline:  $BASE_DESC"
-echo "verifier:  qet-verify $VER"
+echo "verifier:  qet-verify $VER ($UPDATE_STATE)"
 echo '```'
 (( FAILED == 0 )) && echo "OK to open your pull request." || echo "Fix the FAIL lines above (or ask your assistant to) and run again."
 exit $(( FAILED > 0 ))
