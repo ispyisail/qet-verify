@@ -5,6 +5,7 @@
 #
 #   ./verify.sh --qet-dir ~/qet/qelectrotech-source-mirror
 #   ./verify.sh --qet-dir <dir> --binary <dir>/build/qelectrotech   # + save check
+#   ./verify.sh ... --videos <stories dir>   # + do the how-to videos still work (optional)
 #
 # Checks:
 #   1. project and symbol files   (tools/qet-lint, needs no build)
@@ -12,6 +13,8 @@
 #   3. saving a project twice loses nothing (tools/determinism, needs --binary)
 #   4. data saved in a .qet is kept by a .qetdb too (tools/qetdb, needs --binary)
 #   5. a change adding saved data also changes the database code (tools/qetdb)
+#   6. each how-to video story still runs on this build (--videos, needs --binary;
+#      uses qelectrotech-docker/tools/how-to-video, or --video-tool <dir>)
 #
 # Before it runs, verify.sh updates itself from its own repository (set
 # QET_VERIFY_NO_UPDATE=1 to skip), so everyone runs the latest checks.
@@ -49,13 +52,15 @@ if [[ -z "${QET_VERIFY_NO_UPDATE:-}" ]] && git -C "$HERE" rev-parse --git-dir >/
     UPDATE_STATE="update not checked (offline)"
   fi
 fi
-QET_DIR="" BINARY="" MAKE_BASELINES=0
+QET_DIR="" BINARY="" MAKE_BASELINES=0 VIDEOS="" VIDEO_TOOL=""
 
-usage() { sed -n '3,24p' "$0" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '3,27p' "$0" | sed 's/^# \{0,1\}//'; }
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --qet-dir) QET_DIR="${2:-}"; shift ;;
     --binary)  BINARY="${2:-}"; shift ;;
+    --videos)  VIDEOS="${2:-}"; shift ;;
+    --video-tool) VIDEO_TOOL="${2:-}"; shift ;;
     --make-baselines) MAKE_BASELINES=1 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "verify.sh: unknown option: $1" >&2; usage >&2; exit 2 ;;
@@ -64,7 +69,7 @@ while [[ $# -gt 0 ]]; do
 done
 [[ -d "$QET_DIR/sources" ]] || { echo "verify.sh: --qet-dir must be a QElectroTech checkout (no sources/ folder in '$QET_DIR')" >&2; exit 2; }
 
-FAILED=0 SKIPPED=0 LAST=SKIP R1=SKIP R2=SKIP R3=SKIP R4=SKIP R5=SKIP BRANCH_POINT=""
+FAILED=0 SKIPPED=0 LAST=SKIP R1=SKIP R2=SKIP R3=SKIP R4=SKIP R5=SKIP R6=SKIP BRANCH_POINT=""
 say()  { printf '\n== %s\n' "$1"; }
 pass() { LAST=PASS; printf 'PASS  %s\n' "$1"; }
 fail() { LAST=FAIL; printf 'FAIL  %s\n' "$1"; FAILED=$((FAILED+1)); }
@@ -119,7 +124,7 @@ if (( ! MAKE_BASELINES )) && ! live_baselines; then
 fi
 
 # 1. project and symbol files
-say "1/5 Project and symbol files"
+say "1/6 Project and symbol files"
 if (( MAKE_BASELINES )); then
   python3 "$HERE/tools/qet-lint" --baseline "$LINT_BASE" --write-baseline "${LINT_PATHS[@]}" >/dev/null && pass "baseline written" || fail "could not write baseline"
 elif [[ ! -f "$LINT_BASE" ]]; then
@@ -133,7 +138,7 @@ fi
 R1=$LAST
 
 # 2. interface text
-say "2/5 Interface text is English"
+say "2/6 Interface text is English"
 if (( MAKE_BASELINES )); then
   python3 "$HERE/tools/srclint/srclint.py" --qet-dir "$QET_DIR" --baseline "$SRC_BASE" --write-baseline >/dev/null && pass "baseline written" || fail "could not write baseline"
 elif [[ ! -f "$SRC_BASE" ]]; then
@@ -147,7 +152,7 @@ fi
 R2=$LAST
 
 # 3. saving loses nothing
-say "3/5 Saving a project loses nothing"
+say "3/6 Saving a project loses nothing"
 if [[ -z "$BINARY" ]]; then
   skip "pass --binary <path to your built qelectrotech> to run this check"
 elif [[ ! -x "$BINARY" ]]; then
@@ -165,7 +170,7 @@ fi
 R3=$LAST
 
 # 4. what a .qet keeps, a .qetdb keeps
-say "4/5 A .qetdb keeps what a .qet keeps"
+say "4/6 A .qetdb keeps what a .qet keeps"
 if [[ -z "$BINARY" ]]; then
   skip "pass --binary <path to your built qelectrotech> to run this check"
 elif [[ ! -x "$BINARY" ]]; then
@@ -181,7 +186,7 @@ fi
 R4=$LAST
 
 # 5. new saved data reaches the database code
-say "5/5 New saved data is also stored in the .qetdb"
+say "5/6 New saved data is also stored in the .qetdb"
 if (( MAKE_BASELINES )); then
   skip "nothing to write"
 elif [[ -z "$BRANCH_POINT" ]]; then
@@ -193,6 +198,36 @@ else
 fi
 
 R5=$LAST
+
+# 6. the how-to videos still match the interface (optional)
+say "6/6 How-to video stories still run"
+if [[ -z "$VIDEOS" ]]; then
+  skip "pass --videos <folder of story .yaml files> to run this check"
+elif (( MAKE_BASELINES )); then
+  skip "nothing to write"
+elif [[ -z "$BINARY" || ! -x "$BINARY" ]]; then
+  skip "needs --binary"
+else
+  VT="${VIDEO_TOOL:-$HERE/../qelectrotech-docker/tools/how-to-video}"
+  if [[ ! -f "$VT/story.py" ]]; then
+    fail "how-to-video tool not found at $VT (use --video-tool <dir>)"
+  else
+    V_OK=0 V_BAD=0 V_LOG="${TMPDIR:-/tmp}/qet-verify-videos.txt"; : >"$V_LOG"
+    shopt -s nullglob
+    for story in "$VIDEOS"/*.yaml; do
+      if timeout 600 python3 "$VT/story.py" "$story" --binary "$BINARY" --check-only --out "$WORK/videos" >>"$V_LOG" 2>&1; then
+        V_OK=$((V_OK+1))
+      else
+        V_BAD=$((V_BAD+1)); echo "  out of date: $(basename "$story")"
+      fi
+    done
+    if (( V_OK + V_BAD == 0 )); then skip "no .yaml stories in $VIDEOS"
+    elif (( V_BAD == 0 )); then pass "$V_OK story(ies) still do what their video shows"
+    else fail "$V_BAD video(s) no longer match this build; re-record them. Details: $V_LOG"; fi
+  fi
+fi
+
+R6=$LAST
 
 say "Result"
 if (( MAKE_BASELINES )); then
@@ -220,7 +255,7 @@ echo "Receipt (paste into the pull request description):"
 echo '```'
 echo "qet-verify receipt"
 echo "change:    $CHANGE${BRANCH:+ on $BRANCH}${TREE:+ ($TREE)}"
-echo "checks:    project files $R1 | english text $R2 | save check $R3 | qetdb round trip $R4 | qetdb new data $R5"
+echo "checks:    project files $R1 | english text $R2 | save check $R3 | qetdb round trip $R4 | qetdb new data $R5 | how-to videos $R6"
 echo "baseline:  $BASE_DESC"
 echo "verifier:  qet-verify $VER ($UPDATE_STATE)"
 echo '```'
