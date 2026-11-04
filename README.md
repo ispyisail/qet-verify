@@ -56,6 +56,29 @@ A pasted receipt shows the checks were run; it does not prove it, because
 anyone can type one. To be sure, run `verify.sh` yourself (about a minute).
 Proof needs a check that runs on GitHub's servers.
 
+## Windows
+
+Run it from **Git Bash** (installed with [Git for Windows](https://git-scm.com/download/win)),
+with Python 3.8 or newer on the `PATH` (`python` or `py -3`; the script tries both).
+
+```bash
+./verify.sh --qet-dir /c/src/qelectrotech-source-mirror --binary /c/build/bin/QElectroTech.exe
+```
+
+- **Status: checks 1, 2 and 5 are expected to work; checks 3 and 4 have run only
+  under Wine, not yet on real Windows.** Wine passed 1–5 with the CI-built
+  package. Until someone has run all five on Windows, treat a Windows result as
+  provisional and say so in the pull request.
+- `--binary` needs the Qt DLLs next to the `.exe` (the CI portable zip has
+  them) or on `PATH`. The script starts the binary with `--version` first and
+  says so if it cannot.
+- Both save checks give each run its own settings folder (`QET_SETTINGS_DIR`),
+  so they never read or change your QElectroTech settings in the registry.
+- Check 6 (how-to videos) is skipped on Windows: the recorder needs Xvfb,
+  openbox and xdotool. Remember that a `SKIP` is not a pass.
+- `tests/windows-branches.sh` runs `verify.sh` on Linux with Git Bash faked, to
+  guard the Windows-only code paths. It does not replace a run on Windows.
+
 ## What it does not check
 
 It does not decide whether a feature should exist or whether the design is
