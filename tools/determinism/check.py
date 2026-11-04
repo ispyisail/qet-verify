@@ -67,8 +67,16 @@ def semantics(path):
 def resave(binary, src, dst, timeout):
     # Own settings folder per run, so the check never reads or changes the
     # user's real QElectroTech settings (the registry, on Windows).
-    env = dict(os.environ, QT_QPA_PLATFORM="offscreen",
+    env = dict(os.environ,
                QET_SETTINGS_DIR=os.path.join(os.path.dirname(dst), "settings"))
+    # QT_QPA_PLATFORM inherited from the caller defaults to offscreen (true
+    # headless); verify.sh sets it to "" when the build has no qoffscreen
+    # plugin, meaning: don't force a platform, let Qt use its native one.
+    qt_platform = os.environ.get("QT_QPA_PLATFORM", "offscreen")
+    if qt_platform:
+        env["QT_QPA_PLATFORM"] = qt_platform
+    else:
+        env.pop("QT_QPA_PLATFORM", None)
     try:
         proc = subprocess.run([binary, "--resave", src, dst],
                               env=env, capture_output=True, text=True,

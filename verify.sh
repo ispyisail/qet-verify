@@ -100,8 +100,19 @@ binary_ok() {
   [[ -f "$BINARY" ]] || return 1
   (( WINDOWS )) || [[ -x "$BINARY" ]] || return 1
   (( WINDOWS )) || return 0
-  QT_QPA_PLATFORM=offscreen timeout 60 "$BINARY" --version >/dev/null 2>&1
+  QT_QPA_PLATFORM="$QT_PLATFORM" timeout 60 "$BINARY" --version >/dev/null 2>&1
 }
+
+# Headless Qt platform for checks 3/4. Most builds ship qoffscreen (true
+# headless, no window). Some Windows build artifacts don't package it since
+# the app never requests it on a normal run; QT_PLATFORM="" then means "no
+# platform forced", so Qt falls back to its native platform (qwindows on
+# Windows) instead of hanging waiting for a plugin that isn't there. A
+# window may flash briefly in that fallback case.
+QT_PLATFORM="offscreen"
+if (( WINDOWS )) && [[ -n "$BINARY" ]] && [[ ! -f "$(dirname "$BINARY")/platforms/qoffscreen.dll" ]]; then
+  QT_PLATFORM=""
+fi
 
 LINT_BASE="$HERE/baselines/qet-lint.json"
 SRC_BASE="$HERE/baselines/srclint.json"
@@ -186,10 +197,10 @@ if [[ -z "$BINARY" ]]; then
 elif ! binary_ok; then
   fail "binary not found or not executable (on Windows: no Qt DLLs found next to it or on PATH?): $BINARY"
 elif (( MAKE_BASELINES )); then
-  QT_QPA_PLATFORM=offscreen $PY "$HERE/tools/determinism/check.py" --binary "$BINARY" --corpus "$QET_DIR/examples" --baseline "$DET_BASE" --write-baseline >/dev/null && pass "baseline written" || fail "could not write baseline"
+  QT_QPA_PLATFORM="$QT_PLATFORM" $PY "$HERE/tools/determinism/check.py" --binary "$BINARY" --corpus "$QET_DIR/examples" --baseline "$DET_BASE" --write-baseline >/dev/null && pass "baseline written" || fail "could not write baseline"
 elif [[ ! -f "$DET_BASE" ]]; then
   skip "no baseline yet (maintainer: run with --make-baselines on a clean master)"
-elif QT_QPA_PLATFORM=offscreen timeout 1500 $PY "$HERE/tools/determinism/check.py" --binary "$BINARY" --corpus "$QET_DIR/examples" --baseline "$DET_BASE" >"${TMPDIR:-/tmp}/qet-verify-det.txt" 2>&1; then
+elif QT_QPA_PLATFORM="$QT_PLATFORM" timeout 1500 $PY "$HERE/tools/determinism/check.py" --binary "$BINARY" --corpus "$QET_DIR/examples" --baseline "$DET_BASE" >"${TMPDIR:-/tmp}/qet-verify-det.txt" 2>&1; then
   pass "saved projects keep every element, wire and terminal"
 else
   fail "a save lost or changed data. Details: ${TMPDIR:-/tmp}/qet-verify-det.txt"
@@ -205,7 +216,7 @@ elif ! binary_ok; then
   fail "binary not found or not executable (on Windows: no Qt DLLs found next to it or on PATH?): $BINARY"
 elif (( MAKE_BASELINES )); then
   skip "nothing to write: the known differences are listed in baselines/qetdb-known.txt"
-elif QT_QPA_PLATFORM=offscreen timeout 1500 $PY "$HERE/tools/qetdb/check.py" roundtrip --binary "$BINARY" --qet-dir "$QET_DIR" --known "$HERE/baselines/qetdb-known.txt" >"${TMPDIR:-/tmp}/qet-verify-qetdb.txt" 2>&1; then
+elif QT_QPA_PLATFORM="$QT_PLATFORM" timeout 1500 $PY "$HERE/tools/qetdb/check.py" roundtrip --binary "$BINARY" --qet-dir "$QET_DIR" --known "$HERE/baselines/qetdb-known.txt" >"${TMPDIR:-/tmp}/qet-verify-qetdb.txt" 2>&1; then
   pass "every example and fixture project is the same through a .qetdb"
 else
   fail "a .qetdb lost data a .qet keeps. Details: ${TMPDIR:-/tmp}/qet-verify-qetdb.txt"

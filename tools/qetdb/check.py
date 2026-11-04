@@ -85,9 +85,17 @@ def one(job):
     d.mkdir()
     # HOME and XDG_* isolate the settings on Linux; QET_SETTINGS_DIR does it on
     # every system (Windows would otherwise use the real registry).
-    env = dict(os.environ, QT_QPA_PLATFORM="offscreen", HOME=str(d / "h"),
+    env = dict(os.environ, HOME=str(d / "h"),
                XDG_CONFIG_HOME=str(d / "h/c"), XDG_DATA_HOME=str(d / "h/d"),
                QET_SETTINGS_DIR=str(d / "settings"))
+    # QT_QPA_PLATFORM inherited from the caller defaults to offscreen (true
+    # headless); verify.sh sets it to "" when the build has no qoffscreen
+    # plugin, meaning: don't force a platform, let Qt use its native one.
+    qt_platform = os.environ.get("QT_QPA_PLATFORM", "offscreen")
+    if qt_platform:
+        env["QT_QPA_PLATFORM"] = qt_platform
+    else:
+        env.pop("QT_QPA_PLATFORM", None)
     direct, db, back = d / "direct.qet", d / "p.qetdb", d / "back.qet"
     if not run(binary, env, elements, "--resave", str(path), str(direct)):
         return name, "skip", "does not resave as .qet"

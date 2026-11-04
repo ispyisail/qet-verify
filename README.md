@@ -65,13 +65,18 @@ with Python 3.8 or newer on the `PATH` (`python` or `py -3`; the script tries bo
 ./verify.sh --qet-dir /c/src/qelectrotech-source-mirror --binary /c/build/bin/QElectroTech.exe
 ```
 
-- **Status: checks 1, 2 and 5 are expected to work; checks 3 and 4 have run only
-  under Wine, not yet on real Windows.** Wine passed 1–5 with the CI-built
-  package. Until someone has run all five on Windows, treat a Windows result as
-  provisional and say so in the pull request.
+- **Status: all five checks passed on Windows 11 (2026-11-05)** with Git for
+  Windows, Python 3.14 and the CI-built portable package, and your
+  QElectroTech registry settings were left untouched. One run on one machine, so
+  say in the pull request that you ran it on Windows, and tell us if anything
+  fails that should not.
 - `--binary` needs the Qt DLLs next to the `.exe` (the CI portable zip has
   them) or on `PATH`. The script starts the binary with `--version` first and
   says so if it cannot.
+- The CI portable package ships only `qwindows.dll`, with no `qoffscreen.dll`.
+  When `platforms\qoffscreen.dll` is not next to the `.exe`, checks 3 and 4 run
+  with Qt's normal Windows platform, so a window may flash briefly during each
+  resave. With the offscreen plugin they run fully headless.
 - Both save checks give each run its own settings folder (`QET_SETTINGS_DIR`),
   so they never read or change your QElectroTech settings in the registry.
 - Check 6 (how-to videos) is skipped on Windows: the recorder needs Xvfb,

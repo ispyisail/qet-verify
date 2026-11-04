@@ -33,12 +33,12 @@ printf '#!/bin/sh\nexit 9\n' >"$T/bin/python3"
 # `python` works, and says it was used
 printf '#!/bin/sh\necho used >>"$PYTHON_LOG"\nexec %s "$@"\n' "$REAL_PY" >"$T/bin/python"
 # a stand-in qelectrotech.exe: --version answers with $FAKE_EXE_RC
-printf '#!/bin/sh\nexit "${FAKE_EXE_RC:-0}"\n' >"$T/qelectrotech.exe"
+printf '#!/bin/sh\necho "[${QT_QPA_PLATFORM-unset}]" >>"$PLATFORM_LOG"\nexit "${FAKE_EXE_RC:-0}"\n' >"$T/qelectrotech.exe"
 chmod +x "$T"/bin/* "$T/qelectrotech.exe"
 
 run() { # extra verify.sh args; output in $T/out
-  : >"$T/cygpath.log"; : >"$T/python.log"
-  PATH="$T/bin:$PATH" CYGPATH_LOG="$T/cygpath.log" PYTHON_LOG="$T/python.log" \
+  : >"$T/cygpath.log"; : >"$T/python.log"; : >"$T/platform.log"
+  PATH="$T/bin:$PATH" CYGPATH_LOG="$T/cygpath.log" PYTHON_LOG="$T/python.log" PLATFORM_LOG="$T/platform.log" \
     QET_VERIFY_NO_UPDATE=1 TMPDIR="$T" "$HERE/verify.sh" --qet-dir "$T/qet" "$@" >"$T/out" 2>&1
 }
 
@@ -56,6 +56,15 @@ grep -q 'FAIL.*Qt DLLs' "$T/out" && ok "a binary that will not start fails with 
 
 FAKE_EXE_RC=0 run --binary "$T/qelectrotech.exe"
 grep -q 'binary not found or not executable' "$T/out" && bad "a binary that starts was rejected" || ok "a binary that starts is accepted"
+
+# Windows builds that ship no qoffscreen.dll hang under QT_QPA_PLATFORM=offscreen
+# (found on real Windows, 2026-11-05): then no platform must be forced.
+FAKE_EXE_RC=0 run --binary "$T/qelectrotech.exe"
+grep -qxF '[]' "$T/platform.log" && ok "no qoffscreen.dll next to the binary: no Qt platform forced" || bad "forced a Qt platform although qoffscreen.dll is missing ($(head -1 "$T/platform.log"))"
+mkdir -p "$T/platforms" && : >"$T/platforms/qoffscreen.dll"
+FAKE_EXE_RC=0 run --binary "$T/qelectrotech.exe"
+grep -qxF '[offscreen]' "$T/platform.log" && ok "qoffscreen.dll present: offscreen used" || bad "offscreen not used although qoffscreen.dll is present ($(head -1 "$T/platform.log"))"
+rm -rf "$T/platforms"
 
 if grep -q 'Python 3.8 or newer not found' "$T/out"; then bad "python probe failed"; else ok "python probe found an interpreter"; fi
 
