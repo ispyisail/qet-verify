@@ -14,7 +14,7 @@
 #   4. data saved in a .qet is kept by a .qetdb too (tools/qetdb, needs --binary)
 #   5. a change adding saved data also changes the database code (tools/qetdb)
 #   6. each how-to video story still runs on this build (--videos, needs --binary;
-#      uses qelectrotech-docker/tools/how-to-video, or --video-tool <dir>)
+#      uses qet-how-to-video cloned next to this repo, or --video-tool <dir>)
 #
 # Before it runs, verify.sh updates itself from its own repository (set
 # QET_VERIFY_NO_UPDATE=1 to skip), so everyone runs the latest checks.
@@ -208,9 +208,12 @@ elif (( MAKE_BASELINES )); then
 elif [[ -z "$BINARY" || ! -x "$BINARY" ]]; then
   skip "needs --binary"
 else
-  VT="${VIDEO_TOOL:-$HERE/../qelectrotech-docker/tools/how-to-video}"
+  # https://github.com/ispyisail/qet-how-to-video, cloned next to this repo
+  VT="${VIDEO_TOOL:-$HERE/../qet-how-to-video}"
+  [[ -z "$VIDEO_TOOL" && ! -f "$VT/story.py" && -f "$HERE/../qelectrotech-docker/tools/how-to-video/story.py" ]] \
+    && VT="$HERE/../qelectrotech-docker/tools/how-to-video"
   if [[ ! -f "$VT/story.py" ]]; then
-    fail "how-to-video tool not found at $VT (use --video-tool <dir>)"
+    fail "how-to-video tool not found at $VT: git clone https://github.com/ispyisail/qet-how-to-video next to qet-verify, or use --video-tool <dir>"
   else
     V_OK=0 V_BAD=0 V_LOG="${TMPDIR:-/tmp}/qet-verify-videos.txt"; : >"$V_LOG"
     shopt -s nullglob

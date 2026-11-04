@@ -20,7 +20,7 @@ for any failure. A `SKIP` is not a pass: it means the check did not run.
 | 3 | `tools/determinism` | yes | Saving and reloading a project lost or invented an element, wire or terminal |
 | 4 | `tools/qetdb` round trip | yes | A project saved as `.qetdb` and read back is not the same as saved as `.qet`: data the `.qet` keeps is missing from the database. Covers the examples, `tests/qttest/fixtures` and a project with bridges |
 | 5 | `tools/qetdb` scan | no | The change adds saved data to an XML writer but does not touch `sources/dataBase`, add a fixture, or say `qetdb: not needed (reason)` in a commit message |
-| 6 | how-to video stories (optional, `--videos <folder>`) | yes | A story that a how-to video was recorded from no longer runs on this build: a menu was renamed, a dialog changed, or the result is not what the video shows. Re-record that video. Uses `qelectrotech-docker/tools/how-to-video` next to this repo, or `--video-tool <dir>`; needs Xvfb, openbox, xdotool, cmake and Qt 6 dev files |
+| 6 | how-to video stories (optional, `--videos <folder>`) | yes | A story that a how-to video was recorded from no longer runs on this build: a menu was renamed, a dialog changed, or the result is not what the video shows. Re-record that video. Uses [qet-how-to-video](https://github.com/ispyisail/qet-how-to-video) cloned next to this repo, or `--video-tool <dir>`; needs what its README lists (Xvfb, openbox, xdotool, scrot, cmake, Qt 6 dev files). Pass `--videos ../qet-how-to-video/stories` to check the published videos |
 
 Takes about 15 seconds without `--binary`, about a minute with it. Checks 1
 and 2 fetch upstream `master` into your checkout (a private ref,
