@@ -65,7 +65,10 @@ def semantics(path):
 
 
 def resave(binary, src, dst, timeout):
-    env = dict(os.environ, QT_QPA_PLATFORM="offscreen")
+    # Own settings folder per run, so the check never reads or changes the
+    # user's real QElectroTech settings (the registry, on Windows).
+    env = dict(os.environ, QT_QPA_PLATFORM="offscreen",
+               QET_SETTINGS_DIR=os.path.join(os.path.dirname(dst), "settings"))
     try:
         proc = subprocess.run([binary, "--resave", src, dst],
                               env=env, capture_output=True, text=True,

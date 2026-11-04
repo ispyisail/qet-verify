@@ -27,6 +27,19 @@
 
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Windows runs this under Git Bash. Native Python and qelectrotech.exe do not
+# understand Git Bash's /c/... and /tmp/... paths, so every path handed to them
+# is converted to C:/... form; the interpreter is `python`, not `python3`.
+case "$(uname -s 2>/dev/null)" in MINGW*|MSYS*|CYGWIN*) WINDOWS=1 ;; *) WINDOWS=0 ;; esac
+native() { if (( WINDOWS )); then cygpath -m "$1"; else printf '%s' "$1"; fi; }
+PY=""
+for cand in python3 python "py -3"; do
+  # the Microsoft Store stub for `python` exists but only prints a hint, so run it
+  if $cand -c 'import sys; sys.exit(sys.version_info < (3, 8))' >/dev/null 2>&1; then PY="$cand"; break; fi
+done
+[[ -n "$PY" ]] || { echo "verify.sh: Python 3.8 or newer not found (tried python3, python, py -3)" >&2; exit 2; }
+HERE="$(native "$HERE")"
 export PYTHONPATH="$HERE${PYTHONPATH:+:$PYTHONPATH}"
 
 # Update this checker first: a pull request is judged by the checks of the day,
@@ -67,6 +80,11 @@ while [[ $# -gt 0 ]]; do
   esac
   shift
 done
+if (( WINDOWS )); then
+  [[ -n "$QET_DIR" && -d "$QET_DIR" ]] && QET_DIR="$(native "$QET_DIR")"
+  [[ -n "$BINARY" && -e "$BINARY" ]] && BINARY="$(native "$BINARY")"
+  [[ -n "$VIDEOS" && -d "$VIDEOS" ]] && VIDEOS="$(native "$VIDEOS")"
+fi
 [[ -d "$QET_DIR/sources" ]] || { echo "verify.sh: --qet-dir must be a QElectroTech checkout (no sources/ folder in '$QET_DIR')" >&2; exit 2; }
 
 FAILED=0 SKIPPED=0 LAST=SKIP R1=SKIP R2=SKIP R3=SKIP R4=SKIP R5=SKIP R6=SKIP BRANCH_POINT=""
@@ -74,6 +92,16 @@ say()  { printf '\n== %s\n' "$1"; }
 pass() { LAST=PASS; printf 'PASS  %s\n' "$1"; }
 fail() { LAST=FAIL; printf 'FAIL  %s\n' "$1"; FAILED=$((FAILED+1)); }
 skip() { LAST=SKIP; printf 'SKIP  %s\n' "$1"; SKIPPED=$((SKIPPED+1)); }
+
+# A binary that starts: exists, and answers --version. On Windows a missing Qt
+# DLL makes the launch fail at once, so this catches it with a clear message
+# instead of every project failing to resave.
+binary_ok() {
+  [[ -f "$BINARY" ]] || return 1
+  (( WINDOWS )) || [[ -x "$BINARY" ]] || return 1
+  (( WINDOWS )) || return 0
+  QT_QPA_PLATFORM=offscreen timeout 60 "$BINARY" --version >/dev/null 2>&1
+}
 
 LINT_BASE="$HERE/baselines/qet-lint.json"
 SRC_BASE="$HERE/baselines/srclint.json"
@@ -87,7 +115,7 @@ BASE_DESC="$(cat "$HERE/baselines/BASELINE_REF" 2>/dev/null || echo unknown)"
 # baselines are used instead, and the receipt says so.
 LINT_PATHS=("$QET_DIR/examples" "$QET_DIR/elements")
 UPSTREAM_URL="https://github.com/qelectrotech/qelectrotech-source-mirror.git"
-WORK="$(mktemp -d "${TMPDIR:-/tmp}/qet-verify.XXXXXX")"
+WORK="$(native "$(mktemp -d "${TMPDIR:-/tmp}/qet-verify.XXXXXX")")"
 trap 'rm -rf "$WORK"' EXIT
 live_baselines() {
   local up base pin_base pin_head
@@ -111,9 +139,9 @@ live_baselines() {
     git -C "$QET_DIR/elements" archive "$pin_base" 2>/dev/null | tar -x -C "$WORK/base/elements" || return 1
     base_paths+=("$WORK/base/elements")
   fi
-  python3 "$HERE/tools/qet-lint" --baseline "$WORK/qet-lint.json" --write-baseline \
+  $PY "$HERE/tools/qet-lint" --baseline "$WORK/qet-lint.json" --write-baseline \
     "${base_paths[@]}" >/dev/null 2>&1 || return 1
-  python3 "$HERE/tools/srclint/srclint.py" --qet-dir "$WORK/base" \
+  $PY "$HERE/tools/srclint/srclint.py" --qet-dir "$WORK/base" \
     --baseline "$WORK/srclint.json" --write-baseline >/dev/null 2>&1 || return 1
   LINT_BASE="$WORK/qet-lint.json" SRC_BASE="$WORK/srclint.json"
   BRANCH_POINT="$base"
@@ -126,10 +154,10 @@ fi
 # 1. project and symbol files
 say "1/6 Project and symbol files"
 if (( MAKE_BASELINES )); then
-  python3 "$HERE/tools/qet-lint" --baseline "$LINT_BASE" --write-baseline "${LINT_PATHS[@]}" >/dev/null && pass "baseline written" || fail "could not write baseline"
+  $PY "$HERE/tools/qet-lint" --baseline "$LINT_BASE" --write-baseline "${LINT_PATHS[@]}" >/dev/null && pass "baseline written" || fail "could not write baseline"
 elif [[ ! -f "$LINT_BASE" ]]; then
   skip "no baseline yet (maintainer: run with --make-baselines on a clean master)"
-elif python3 "$HERE/tools/qet-lint" --baseline "$LINT_BASE" "${LINT_PATHS[@]}" >"${TMPDIR:-/tmp}/qet-verify-lint.txt" 2>&1; then
+elif $PY "$HERE/tools/qet-lint" --baseline "$LINT_BASE" "${LINT_PATHS[@]}" >"${TMPDIR:-/tmp}/qet-verify-lint.txt" 2>&1; then
   pass "no new problems in example projects or symbols"
 else
   fail "new problem found. Details: ${TMPDIR:-/tmp}/qet-verify-lint.txt"
@@ -140,10 +168,10 @@ R1=$LAST
 # 2. interface text
 say "2/6 Interface text is English"
 if (( MAKE_BASELINES )); then
-  python3 "$HERE/tools/srclint/srclint.py" --qet-dir "$QET_DIR" --baseline "$SRC_BASE" --write-baseline >/dev/null && pass "baseline written" || fail "could not write baseline"
+  $PY "$HERE/tools/srclint/srclint.py" --qet-dir "$QET_DIR" --baseline "$SRC_BASE" --write-baseline >/dev/null && pass "baseline written" || fail "could not write baseline"
 elif [[ ! -f "$SRC_BASE" ]]; then
   skip "no baseline yet (maintainer: run with --make-baselines on a clean master)"
-elif python3 "$HERE/tools/srclint/srclint.py" --qet-dir "$QET_DIR" --baseline "$SRC_BASE" --gate >"${TMPDIR:-/tmp}/qet-verify-src.txt" 2>&1; then
+elif $PY "$HERE/tools/srclint/srclint.py" --qet-dir "$QET_DIR" --baseline "$SRC_BASE" --gate >"${TMPDIR:-/tmp}/qet-verify-src.txt" 2>&1; then
   pass "no new French text in tr()"
 else
   fail "new non-English interface text. Details: ${TMPDIR:-/tmp}/qet-verify-src.txt"
@@ -155,13 +183,13 @@ R2=$LAST
 say "3/6 Saving a project loses nothing"
 if [[ -z "$BINARY" ]]; then
   skip "pass --binary <path to your built qelectrotech> to run this check"
-elif [[ ! -x "$BINARY" ]]; then
-  fail "binary not found or not executable: $BINARY"
+elif ! binary_ok; then
+  fail "binary not found or not executable (on Windows: no Qt DLLs found next to it or on PATH?): $BINARY"
 elif (( MAKE_BASELINES )); then
-  QT_QPA_PLATFORM=offscreen python3 "$HERE/tools/determinism/check.py" --binary "$BINARY" --corpus "$QET_DIR/examples" --baseline "$DET_BASE" --write-baseline >/dev/null && pass "baseline written" || fail "could not write baseline"
+  QT_QPA_PLATFORM=offscreen $PY "$HERE/tools/determinism/check.py" --binary "$BINARY" --corpus "$QET_DIR/examples" --baseline "$DET_BASE" --write-baseline >/dev/null && pass "baseline written" || fail "could not write baseline"
 elif [[ ! -f "$DET_BASE" ]]; then
   skip "no baseline yet (maintainer: run with --make-baselines on a clean master)"
-elif QT_QPA_PLATFORM=offscreen timeout 1500 python3 "$HERE/tools/determinism/check.py" --binary "$BINARY" --corpus "$QET_DIR/examples" --baseline "$DET_BASE" >"${TMPDIR:-/tmp}/qet-verify-det.txt" 2>&1; then
+elif QT_QPA_PLATFORM=offscreen timeout 1500 $PY "$HERE/tools/determinism/check.py" --binary "$BINARY" --corpus "$QET_DIR/examples" --baseline "$DET_BASE" >"${TMPDIR:-/tmp}/qet-verify-det.txt" 2>&1; then
   pass "saved projects keep every element, wire and terminal"
 else
   fail "a save lost or changed data. Details: ${TMPDIR:-/tmp}/qet-verify-det.txt"
@@ -173,11 +201,11 @@ R3=$LAST
 say "4/6 A .qetdb keeps what a .qet keeps"
 if [[ -z "$BINARY" ]]; then
   skip "pass --binary <path to your built qelectrotech> to run this check"
-elif [[ ! -x "$BINARY" ]]; then
-  fail "binary not found or not executable: $BINARY"
+elif ! binary_ok; then
+  fail "binary not found or not executable (on Windows: no Qt DLLs found next to it or on PATH?): $BINARY"
 elif (( MAKE_BASELINES )); then
   skip "nothing to write: the known differences are listed in baselines/qetdb-known.txt"
-elif QT_QPA_PLATFORM=offscreen timeout 1500 python3 "$HERE/tools/qetdb/check.py" roundtrip --binary "$BINARY" --qet-dir "$QET_DIR" --known "$HERE/baselines/qetdb-known.txt" >"${TMPDIR:-/tmp}/qet-verify-qetdb.txt" 2>&1; then
+elif QT_QPA_PLATFORM=offscreen timeout 1500 $PY "$HERE/tools/qetdb/check.py" roundtrip --binary "$BINARY" --qet-dir "$QET_DIR" --known "$HERE/baselines/qetdb-known.txt" >"${TMPDIR:-/tmp}/qet-verify-qetdb.txt" 2>&1; then
   pass "every example and fixture project is the same through a .qetdb"
 else
   fail "a .qetdb lost data a .qet keeps. Details: ${TMPDIR:-/tmp}/qet-verify-qetdb.txt"
@@ -191,7 +219,7 @@ if (( MAKE_BASELINES )); then
   skip "nothing to write"
 elif [[ -z "$BRANCH_POINT" ]]; then
   skip "needs the branch point on upstream master (no network, or not a git checkout)"
-elif python3 "$HERE/tools/qetdb/check.py" static --qet-dir "$QET_DIR" --base "$BRANCH_POINT" >"${TMPDIR:-/tmp}/qet-verify-qetdb-static.txt" 2>&1; then
+elif $PY "$HERE/tools/qetdb/check.py" static --qet-dir "$QET_DIR" --base "$BRANCH_POINT" >"${TMPDIR:-/tmp}/qet-verify-qetdb-static.txt" 2>&1; then
   pass "$(head -1 "${TMPDIR:-/tmp}/qet-verify-qetdb-static.txt")"
 else
   fail "new data written to a .qet but not stored in the .qetdb. Details: ${TMPDIR:-/tmp}/qet-verify-qetdb-static.txt"
@@ -205,7 +233,9 @@ if [[ -z "$VIDEOS" ]]; then
   skip "pass --videos <folder of story .yaml files> to run this check"
 elif (( MAKE_BASELINES )); then
   skip "nothing to write"
-elif [[ -z "$BINARY" || ! -x "$BINARY" ]]; then
+elif (( WINDOWS )); then
+  skip "the video recorder needs Xvfb, openbox and xdotool, which only Linux has"
+elif [[ -z "$BINARY" ]] || ! binary_ok; then
   skip "needs --binary"
 else
   # https://github.com/ispyisail/qet-how-to-video, cloned next to this repo
@@ -218,7 +248,7 @@ else
     V_OK=0 V_BAD=0 V_LOG="${TMPDIR:-/tmp}/qet-verify-videos.txt"; : >"$V_LOG"
     shopt -s nullglob
     for story in "$VIDEOS"/*.yaml; do
-      if timeout 600 python3 "$VT/story.py" "$story" --binary "$BINARY" --check-only --out "$WORK/videos" >>"$V_LOG" 2>&1; then
+      if timeout 600 $PY "$VT/story.py" "$story" --binary "$BINARY" --check-only --out "$WORK/videos" >>"$V_LOG" 2>&1; then
         V_OK=$((V_OK+1))
       else
         V_BAD=$((V_BAD+1)); echo "  out of date: $(basename "$story")"

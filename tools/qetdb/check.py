@@ -83,8 +83,11 @@ def one(job):
     name = path.stem
     d = Path(work) / f"{index}-{name}"
     d.mkdir()
+    # HOME and XDG_* isolate the settings on Linux; QET_SETTINGS_DIR does it on
+    # every system (Windows would otherwise use the real registry).
     env = dict(os.environ, QT_QPA_PLATFORM="offscreen", HOME=str(d / "h"),
-               XDG_CONFIG_HOME=str(d / "h/c"), XDG_DATA_HOME=str(d / "h/d"))
+               XDG_CONFIG_HOME=str(d / "h/c"), XDG_DATA_HOME=str(d / "h/d"),
+               QET_SETTINGS_DIR=str(d / "settings"))
     direct, db, back = d / "direct.qet", d / "p.qetdb", d / "back.qet"
     if not run(binary, env, elements, "--resave", str(path), str(direct)):
         return name, "skip", "does not resave as .qet"
