@@ -6,6 +6,7 @@
 #   ./verify.sh --qet-dir ~/qet/qelectrotech-source-mirror
 #   ./verify.sh --qet-dir <dir> --binary <dir>/build/qelectrotech   # + save check
 #   ./verify.sh ... --videos <stories dir>   # + do the how-to videos still work (optional)
+#   ./verify.sh ... --claude-review [--review-level high]   # + Claude Code review (optional)
 #
 # Checks:
 #   1. project and symbol files   (tools/qet-lint, needs no build)
@@ -15,6 +16,8 @@
 #   5. a change adding saved data also changes the database code (tools/qetdb)
 #   6. each how-to video story still runs on this build (--videos, needs --binary;
 #      uses qet-how-to-video cloned next to this repo, or --video-tool <dir>)
+#   7. Claude Code's /code-review of the branch (--claude-review, needs the
+#      `claude` command, logged in). Advisory: it can WARN, never FAIL.
 #
 # Before it runs, verify.sh updates itself from its own repository (set
 # QET_VERIFY_NO_UPDATE=1 to skip), so everyone runs the latest checks.
@@ -65,15 +68,17 @@ if [[ -z "${QET_VERIFY_NO_UPDATE:-}" ]] && git -C "$HERE" rev-parse --git-dir >/
     UPDATE_STATE="update not checked (offline)"
   fi
 fi
-QET_DIR="" BINARY="" MAKE_BASELINES=0 VIDEOS="" VIDEO_TOOL=""
+QET_DIR="" BINARY="" MAKE_BASELINES=0 VIDEOS="" VIDEO_TOOL="" CLAUDE_REVIEW=0 REVIEW_LEVEL="medium"
 
-usage() { sed -n '3,27p' "$0" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '3,30p' "$0" | sed 's/^# \{0,1\}//'; }
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --qet-dir) QET_DIR="${2:-}"; shift ;;
     --binary)  BINARY="${2:-}"; shift ;;
     --videos)  VIDEOS="${2:-}"; shift ;;
     --video-tool) VIDEO_TOOL="${2:-}"; shift ;;
+    --claude-review) CLAUDE_REVIEW=1 ;;
+    --review-level) REVIEW_LEVEL="${2:-}"; CLAUDE_REVIEW=1; shift ;;
     --make-baselines) MAKE_BASELINES=1 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "verify.sh: unknown option: $1" >&2; usage >&2; exit 2 ;;
@@ -86,12 +91,17 @@ if (( WINDOWS )); then
   [[ -n "$VIDEOS" && -d "$VIDEOS" ]] && VIDEOS="$(native "$VIDEOS")"
 fi
 [[ -d "$QET_DIR/sources" ]] || { echo "verify.sh: --qet-dir must be a QElectroTech checkout (no sources/ folder in '$QET_DIR')" >&2; exit 2; }
+# max and ultra start many reviewers (ultra runs in the cloud and can only be
+# started by a person), so a script offers the levels up to xhigh.
+case "$REVIEW_LEVEL" in low|medium|high|xhigh) ;; *)
+  echo "verify.sh: --review-level must be low, medium, high or xhigh (got '$REVIEW_LEVEL')" >&2; exit 2 ;; esac
 
-FAILED=0 SKIPPED=0 LAST=SKIP R1=SKIP R2=SKIP R3=SKIP R4=SKIP R5=SKIP R6=SKIP BRANCH_POINT=""
+FAILED=0 SKIPPED=0 WARNED=0 LAST=SKIP R1=SKIP R2=SKIP R3=SKIP R4=SKIP R5=SKIP R6=SKIP R7=SKIP BRANCH_POINT=""
 say()  { printf '\n== %s\n' "$1"; }
 pass() { LAST=PASS; printf 'PASS  %s\n' "$1"; }
 fail() { LAST=FAIL; printf 'FAIL  %s\n' "$1"; FAILED=$((FAILED+1)); }
 skip() { LAST=SKIP; printf 'SKIP  %s\n' "$1"; SKIPPED=$((SKIPPED+1)); }
+warn() { LAST=WARN; printf 'WARN  %s\n' "$1"; WARNED=$((WARNED+1)); }
 
 # A binary that starts: exists, and answers --version. On Windows a missing Qt
 # DLL makes the launch fail at once, so this catches it with a clear message
@@ -127,7 +137,15 @@ BASE_DESC="$(cat "$HERE/baselines/BASELINE_REF" 2>/dev/null || echo unknown)"
 LINT_PATHS=("$QET_DIR/examples" "$QET_DIR/elements")
 UPSTREAM_URL="https://github.com/qelectrotech/qelectrotech-source-mirror.git"
 WORK="$(native "$(mktemp -d "${TMPDIR:-/tmp}/qet-verify.XXXXXX")")"
-trap 'rm -rf "$WORK"' EXIT
+REVIEW_TREE=""
+cleanup() {
+  # check 7's worktree is registered in the QET checkout; unregister it too
+  [[ -n "$REVIEW_TREE" ]] && git -C "$QET_DIR" worktree remove --force "$REVIEW_TREE" >/dev/null 2>&1
+  rm -rf "$WORK"
+  [[ -n "$REVIEW_TREE" ]] && git -C "$QET_DIR" worktree prune >/dev/null 2>&1
+  return 0
+}
+trap cleanup EXIT
 live_baselines() {
   local up base pin_base pin_head
   git -C "$QET_DIR" rev-parse --git-dir >/dev/null 2>&1 || return 1
@@ -163,7 +181,7 @@ if (( ! MAKE_BASELINES )) && ! live_baselines; then
 fi
 
 # 1. project and symbol files
-say "1/6 Project and symbol files"
+say "1/7 Project and symbol files"
 if (( MAKE_BASELINES )); then
   $PY "$HERE/tools/qet-lint" --baseline "$LINT_BASE" --write-baseline "${LINT_PATHS[@]}" >/dev/null && pass "baseline written" || fail "could not write baseline"
 elif [[ ! -f "$LINT_BASE" ]]; then
@@ -177,7 +195,7 @@ fi
 R1=$LAST
 
 # 2. interface text
-say "2/6 Interface text is English"
+say "2/7 Interface text is English"
 if (( MAKE_BASELINES )); then
   $PY "$HERE/tools/srclint/srclint.py" --qet-dir "$QET_DIR" --baseline "$SRC_BASE" --write-baseline >/dev/null && pass "baseline written" || fail "could not write baseline"
 elif [[ ! -f "$SRC_BASE" ]]; then
@@ -191,7 +209,7 @@ fi
 R2=$LAST
 
 # 3. saving loses nothing
-say "3/6 Saving a project loses nothing"
+say "3/7 Saving a project loses nothing"
 if [[ -z "$BINARY" ]]; then
   skip "pass --binary <path to your built qelectrotech> to run this check"
 elif ! binary_ok; then
@@ -209,7 +227,7 @@ fi
 R3=$LAST
 
 # 4. what a .qet keeps, a .qetdb keeps
-say "4/6 A .qetdb keeps what a .qet keeps"
+say "4/7 A .qetdb keeps what a .qet keeps"
 if [[ -z "$BINARY" ]]; then
   skip "pass --binary <path to your built qelectrotech> to run this check"
 elif ! binary_ok; then
@@ -225,7 +243,7 @@ fi
 R4=$LAST
 
 # 5. new saved data reaches the database code
-say "5/6 New saved data is also stored in the .qetdb"
+say "5/7 New saved data is also stored in the .qetdb"
 if (( MAKE_BASELINES )); then
   skip "nothing to write"
 elif [[ -z "$BRANCH_POINT" ]]; then
@@ -239,7 +257,7 @@ fi
 R5=$LAST
 
 # 6. the how-to videos still match the interface (optional)
-say "6/6 How-to video stories still run"
+say "6/7 How-to video stories still run"
 if [[ -z "$VIDEOS" ]]; then
   skip "pass --videos <folder of story .yaml files> to run this check"
 elif (( MAKE_BASELINES )); then
@@ -273,13 +291,66 @@ fi
 
 R6=$LAST
 
+# 7. Claude Code's /code-review of the branch (optional, advisory)
+# A review by a model is not repeatable the way checks 1-6 are: two runs on the
+# same commit can find different things. So it never FAILs; findings WARN and
+# the exit status ignores them. It reviews the committed branch, not
+# uncommitted edits: a throwaway worktree of HEAD is soft-reset to the branch
+# point, which makes the whole branch the "current diff" /code-review reviews
+# by default. The worktree is read-only to the reviewer (no Edit/Write tools).
+say "7/7 Claude Code review (advisory)"
+REVIEW_LOG="${TMPDIR:-/tmp}/qet-verify-review.txt"
+if (( ! CLAUDE_REVIEW )); then
+  skip "pass --claude-review to run /code-review on your branch (needs Claude Code)"
+elif (( MAKE_BASELINES )); then
+  skip "nothing to write"
+elif [[ -z "$BRANCH_POINT" ]]; then
+  skip "needs the branch point on upstream master (no network, or not a git checkout)"
+elif ! command -v claude >/dev/null 2>&1; then
+  skip "the claude command (Claude Code) is not on PATH"
+elif [[ -z "$(git -C "$QET_DIR" diff --name-only "$BRANCH_POINT" HEAD 2>/dev/null)" ]]; then
+  skip "no committed change since the branch point to review"
+else
+  REVIEW_TREE="$WORK/review"
+  if ! git -C "$QET_DIR" worktree add --detach --quiet "$REVIEW_TREE" HEAD >/dev/null 2>&1 \
+     || ! git -C "$REVIEW_TREE" reset --quiet --soft "$BRANCH_POINT"; then
+    skip "could not make a worktree of HEAD in $QET_DIR"
+  else
+    echo "reviewing $(git -C "$REVIEW_TREE" diff --cached --shortstat) at level $REVIEW_LEVEL (takes minutes)..."
+    ( cd "$REVIEW_TREE" && timeout 1800 claude -p "/code-review $REVIEW_LEVEL" \
+        --allowedTools "Read Grep Glob Agent Bash(git diff:*) Bash(git log:*) Bash(git show:*) Bash(git status:*) Bash(git rev-parse:*) Bash(git merge-base:*) Bash(git blame:*)" \
+        --disallowedTools "Edit Write NotebookEdit" --output-format text ) >"$REVIEW_LOG" 2>&1
+    R_EXIT=$?
+    R_FIRST="$(grep -m1 -v '^[[:space:]]*$' "$REVIEW_LOG" | tr -d '[:space:]')"
+    if (( R_EXIT == 124 )); then
+      skip "the review took over 30 minutes and was stopped. Partial output: $REVIEW_LOG"
+    elif (( R_EXIT != 0 )) || [[ -z "$R_FIRST" ]] || grep -qiE 'unknown (skill|command)|not logged in|please run /login|invalid api key' "$REVIEW_LOG"; then
+      skip "claude did not run the review (logged in? a version with /code-review?). Output: $REVIEW_LOG"
+    else
+      # No findings prints "(none)" (or an empty JSON list); findings come as a
+      # JSON list of {file, line, summary, failure_scenario}.
+      R_COUNT="$(grep -c '"summary"' "$REVIEW_LOG")"
+      if [[ "$R_FIRST" == "(none)" ]] || { (( R_COUNT == 0 )) && grep -qE '^[[:space:]]*\[[[:space:]]*\][[:space:]]*$' "$REVIEW_LOG"; }; then
+        pass "no findings at level $REVIEW_LEVEL. Notes: $REVIEW_LOG"
+      elif (( R_COUNT > 0 )); then
+        warn "$R_COUNT finding(s) to read (not a failure). Details: $REVIEW_LOG"
+      else
+        warn "the review has notes to read (not a failure). Details: $REVIEW_LOG"
+      fi
+    fi
+  fi
+fi
+
+R7=$LAST
+[[ "$R7" != SKIP ]] && R7="$R7 ($REVIEW_LEVEL)"
+
 say "Result"
 if (( MAKE_BASELINES )); then
   (( FAILED == 0 )) && git -C "$QET_DIR" rev-parse --git-dir >/dev/null 2>&1 && printf "upstream master %s\n" "$(git -C "$QET_DIR" rev-parse --short=9 HEAD)" > "$HERE/baselines/BASELINE_REF"
   (( FAILED == 0 )) && echo "Baselines written to $HERE/baselines" || echo "Some baselines failed."
   exit $(( FAILED > 0 ))
 fi
-printf '%d failed, %d skipped\n' "$FAILED" "$SKIPPED"
+printf '%d failed, %d skipped%s\n' "$FAILED" "$SKIPPED" "$( (( WARNED )) && printf ', %d warning(s) to read' "$WARNED")"
 
 # Receipt: paste this block into the pull request description. It names the
 # commit the checks ran on, so a stale receipt (edited since) is easy to spot.
@@ -299,9 +370,10 @@ echo "Receipt (paste into the pull request description):"
 echo '```'
 echo "qet-verify receipt"
 echo "change:    $CHANGE${BRANCH:+ on $BRANCH}${TREE:+ ($TREE)}"
-echo "checks:    project files $R1 | english text $R2 | save check $R3 | qetdb round trip $R4 | qetdb new data $R5 | how-to videos $R6"
+echo "checks:    project files $R1 | english text $R2 | save check $R3 | qetdb round trip $R4 | qetdb new data $R5 | how-to videos $R6 | code review $R7"
 echo "baseline:  $BASE_DESC"
 echo "verifier:  qet-verify $VER ($UPDATE_STATE)"
 echo '```'
+(( FAILED == 0 && WARNED )) && echo "Read the code review ($REVIEW_LOG) and fix what is real; a WARN does not block the pull request."
 (( FAILED == 0 )) && echo "OK to open your pull request." || echo "Fix the FAIL lines above (or ask your assistant to) and run again."
 exit $(( FAILED > 0 ))

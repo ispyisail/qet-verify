@@ -21,6 +21,7 @@ for any failure. A `SKIP` is not a pass: it means the check did not run.
 | 4 | `tools/qetdb` round trip | yes | A project saved as `.qetdb` and read back is not the same as saved as `.qet`: data the `.qet` keeps is missing from the database. Covers the examples, `tests/qttest/fixtures` and a project with bridges |
 | 5 | `tools/qetdb` scan | no | The change adds saved data to an XML writer but does not touch `sources/dataBase`, add a fixture, or say `qetdb: not needed (reason)` in a commit message |
 | 6 | how-to video stories (optional, `--videos <folder>`) | yes | A story that a how-to video was recorded from no longer runs on this build: a menu was renamed, a dialog changed, or the result is not what the video shows. Re-record that video. Uses [qet-how-to-video](https://github.com/ispyisail/qet-how-to-video) cloned next to this repo, or `--video-tool <dir>`; needs what its README lists (Xvfb, openbox, xdotool, scrot, cmake, Qt 6 dev files). Pass `--videos ../qet-how-to-video/stories` to check the published videos |
+| 7 | Claude Code review (optional, `--claude-review`) | no | Never fails. It runs Claude Code's `/code-review` on your branch (everything since the branch point, committed work only) and prints WARN with the number of findings. Read them and fix the real ones. Needs the `claude` command, logged in; uses your Claude usage and takes a few minutes. `--review-level low|medium|high|xhigh` (default `medium`) |
 
 Takes about 15 seconds without `--binary`, about a minute with it. Checks 1
 and 2 fetch upstream `master` into your checkout (a private ref,
@@ -83,6 +84,23 @@ with Python 3.8 or newer on the `PATH` (`python` or `py -3`; the script tries bo
   openbox and xdotool. Remember that a `SKIP` is not a pass.
 - `tests/windows-branches.sh` runs `verify.sh` on Linux with Git Bash faked, to
   guard the Windows-only code paths. It does not replace a run on Windows.
+
+## The Claude Code review (check 7)
+
+`--claude-review` asks [Claude Code](https://claude.com/claude-code) to review your
+change for bugs before a person does. It is off unless you ask for it, and it can
+only `WARN`, never `FAIL`: a review by a model is not repeatable the way checks 1 to 6
+are, and two runs on the same commit can find different things. The findings are
+written to the file it names, each with the file, the line and what goes wrong. Some
+will be wrong; fix the real ones and say in the pull request which ones you left and why.
+
+It reviews committed work only, from the commit your branch started from on upstream
+`master` to `HEAD`, in a throwaway worktree that the reviewer can read but not
+change. Your checkout is not touched. It needs the network (for the branch point)
+and a Claude Code login, and it uses your own Claude usage: about 2 to 3 minutes for a
+200-line change at `medium`. `--review-level` takes `low`, `medium`, `high` or `xhigh`;
+the deeper levels take longer and use more. The multi-agent `ultra` review can only be
+started by a person, with `/code-review ultra` in Claude Code.
 
 ## What it does not check
 
